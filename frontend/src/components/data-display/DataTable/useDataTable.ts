@@ -2,13 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 import { apiClient } from '../../../lib/apiClient';
 import { queryKeys } from '../../../lib/queryKeys';
-import type { Sort, Filters, DisplayConfig, FieldMeta } from '../../../lib/types';
+import type { Sort, Filters, DisplayConfig, FieldMeta, ResolvedData, QueryResult } from '../../../lib/types';
 
 interface UseDataTableOptions {
   entity: string;
+  resolvedData?: ResolvedData;
 }
 
-export function useDataTable({ entity }: UseDataTableOptions) {
+export function useDataTable({ entity, resolvedData }: UseDataTableOptions) {
   const configQuery = useQuery({
     queryKey: queryKeys.displayConfig(entity),
     queryFn: () => apiClient.fetchDisplayConfig(entity),
@@ -36,8 +37,12 @@ export function useDataTable({ entity }: UseDataTableOptions) {
     queryFn: () =>
       apiClient.fetchEntityList(entity, { sort, page, pageSize, filters }),
     staleTime: 30 * 1000,
-    enabled: fieldMetaQuery.isSuccess,
+    enabled: fieldMetaQuery.isSuccess && resolvedData === undefined,
   });
+
+  const resolvedQueryResult: QueryResult | undefined = resolvedData
+    ? { rows: resolvedData.rows, totalCount: resolvedData.total_count, page: 1, pageSize: resolvedData.rows.length }
+    : undefined;
 
   const handleSort = useCallback(
     (field: string) => {
@@ -75,8 +80,10 @@ export function useDataTable({ entity }: UseDataTableOptions) {
     page,
     pageSize,
     filters,
-    data: dataQuery.data,
-    isLoading: dataQuery.isLoading || configQuery.isLoading || fieldMetaQuery.isLoading,
+    data: resolvedQueryResult ?? dataQuery.data,
+    isLoading: resolvedData !== undefined
+      ? false
+      : (dataQuery.isLoading || configQuery.isLoading || fieldMetaQuery.isLoading),
     isError: dataQuery.isError || configQuery.isError || fieldMetaQuery.isError,
     error: dataQuery.error ?? configQuery.error ?? fieldMetaQuery.error,
     handleSort,

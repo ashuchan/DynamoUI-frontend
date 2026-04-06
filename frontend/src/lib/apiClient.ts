@@ -91,7 +91,7 @@ export const apiClient = {
     apiFetch<QueryResult>(`/entities/${entity}?${toQueryString(params)}`),
 
   fetchSingleRecord: (entity: string, pk: string) =>
-    apiFetch<QueryResult>(`/entities/${entity}/${pk}`),
+    apiFetch<Record<string, unknown>>(`/entities/${entity}/${pk}`),
 
   fetchDisplayConfig: (entity: string) =>
     apiFetch<DisplayConfig>(`/schema/${entity}/display`),
@@ -121,8 +121,8 @@ export const apiClient = {
     apiFetch<WidgetDashboard>('/widgets/dashboard'),
 
   executeWidget: (widgetId: string, params: Record<string, unknown>) =>
-    apiFetch<QueryResult>(`/widgets/${widgetId}/execute`, {
+    apiFetch<{ rows: Record<string, unknown>[]; totalCount: number }>(`/widgets/${widgetId}/execute`, {
       method: 'POST',
-      body: JSON.stringify(params),
+      body: JSON.stringify({ params }),
     }),
 };

@@ -14,6 +14,7 @@ interface DataTableCellProps {
   value: unknown;
   entity: string;
   pk: string;
+  mutationId?: string;
   onNavigate?: (entity: string, pk: string) => void;
   editingEnabled?: boolean;
 }
@@ -42,12 +43,12 @@ function CellContent({
     case 'date':
       return <DateCell value={value} format={field.display?.format} />;
     case 'uuid':
-      if (field.fkTarget && onNavigate) {
+      if (field.fk && onNavigate) {
         return (
           <FKCell
             value={value}
-            targetEntity={field.fkTarget.entity}
-            targetField={field.fkTarget.field}
+            targetEntity={field.fk.entity}
+            targetField={field.fk.field}
             onNavigate={onNavigate}
           />
         );
@@ -69,18 +70,19 @@ export function DataTableCell({
   value,
   entity,
   pk,
+  mutationId = '',
   onNavigate,
   editingEnabled = true,
 }: DataTableCellProps) {
   const content = <CellContent field={field} value={value} onNavigate={onNavigate} />;
 
   // PK fields and sensitive fields are never inline-editable
-  const canEdit = editingEnabled && !field.isPK && !field.sensitive;
+  const canEdit = editingEnabled && !field.isPK && !field.sensitive && mutationId !== '';
 
   if (canEdit) {
     return (
       <td className="px-4 py-2 whitespace-nowrap text-sm">
-        <EditableCell entity={entity} pk={pk} field={field} value={value}>
+        <EditableCell entity={entity} pk={pk} mutationId={mutationId} field={field} value={value}>
           {content}
         </EditableCell>
         {/* Always show plain content on sm breakpoint (no double-click editing) */}

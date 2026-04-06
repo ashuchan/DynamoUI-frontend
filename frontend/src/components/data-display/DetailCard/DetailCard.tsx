@@ -28,7 +28,7 @@ export function DetailCard({ entity, pk, onBack, onNavigate }: DetailCardProps) 
   });
 
   const fields = fieldMetaQuery.data ?? [];
-  const record = recordQuery.data?.rows[0] ?? null;
+  const record = recordQuery.data ?? null;
 
   const isLoading = fieldMetaQuery.isLoading || recordQuery.isLoading;
   const isError = fieldMetaQuery.isError || recordQuery.isError;

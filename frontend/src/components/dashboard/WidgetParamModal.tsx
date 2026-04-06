@@ -11,7 +11,7 @@ interface WidgetParamModalProps {
 export function WidgetParamModal({ widget, onExecute, onCancel }: WidgetParamModalProps) {
   const [params, setParams] = useState<Record<string, unknown>>(
     Object.fromEntries(
-      widget.params.map((p) => [p.name, p.defaultValue ?? '']),
+      widget.params.map((p) => [p.name, p.default ?? '']),
     ),
   );
 

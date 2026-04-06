@@ -9,15 +9,34 @@ import { DataTableRow } from './DataTableRow';
 import { DataTableEmpty } from './DataTableEmpty';
 import { DataTablePagination } from './DataTablePagination';
 import { DataTableFilter } from './DataTableFilter';
-import type { FieldMeta } from '../../../lib/types';
+import type { FieldMeta, ResolvedData } from '../../../lib/types';
 
 interface DataTableProps {
   entity: string;
+  resolvedData?: ResolvedData;
   onRowClick?: (entity: string, pk: string) => void;
   onNavigate?: (entity: string, pk: string) => void;
 }
 
-export function DataTable({ entity, onRowClick, onNavigate }: DataTableProps) {
+function deriveFieldsFromRows(
+  rowKeys: string[],
+  knownFields: FieldMeta[],
+): FieldMeta[] {
+  const knownMap = new Map(knownFields.map((f) => [f.name, f]));
+  return rowKeys.map(
+    (key): FieldMeta =>
+      knownMap.get(key) ?? {
+        name: key,
+        type: 'string',
+        label: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        isPK: false,
+        nullable: true,
+        sensitive: false,
+      },
+  );
+}
+
+export function DataTable({ entity, resolvedData, onRowClick, onNavigate }: DataTableProps) {
   const {
     config,
     fields,
@@ -32,15 +51,18 @@ export function DataTable({ entity, onRowClick, onNavigate }: DataTableProps) {
     handleSort,
     handleFilterChange,
     handlePageChange,
-  } = useDataTable({ entity });
+  } = useDataTable({ entity, resolvedData });
 
-  // Visible fields only, in declared order
-  const visibleFields: FieldMeta[] = config
-    ? fields.filter(
-        (f) =>
-          config.visibleFields.includes(f.name) && f.display?.visible !== false,
-      )
-    : fields.filter((f) => f.display?.visible !== false);
+  // When resolved data is present, derive columns from actual row keys so that
+  // computed columns (e.g. purchase_count) appear and missing non-selected
+  // columns (e.g. artist_id that wasn't in GROUP BY) are excluded.
+  const visibleFields: FieldMeta[] = resolvedData?.rows.length
+    ? deriveFieldsFromRows(Object.keys(resolvedData.rows[0]), fields)
+    : config
+      ? fields.filter(
+          (f) => config.visibleFields.includes(f.name) && f.display?.visible !== false,
+        )
+      : fields.filter((f) => f.display?.visible !== false);
 
   // Determine PK field name
   const pkField = fields.find((f) => f.isPK);
@@ -83,13 +105,15 @@ export function DataTable({ entity, onRowClick, onNavigate }: DataTableProps) {
 
   return (
     <div className="flex flex-col rounded-lg border border-dui-border bg-dui-surface overflow-hidden shadow-sm">
-      {/* Filter bar */}
-      <DataTableFilter
-        fields={visibleFields}
-        filters={filters}
-        searchableFields={config?.searchableFields ?? []}
-        onFilterChange={handleFilterChange}
-      />
+      {/* Filter bar — hidden for resolved (pre-executed) queries */}
+      {!resolvedData && (
+        <DataTableFilter
+          fields={visibleFields}
+          filters={filters}
+          searchableFields={config?.searchableFields ?? []}
+          onFilterChange={handleFilterChange}
+        />
+      )}
 
       {/* Table scroll wrapper */}
       <div className="overflow-x-auto">
@@ -130,8 +154,8 @@ export function DataTable({ entity, onRowClick, onNavigate }: DataTableProps) {
         </table>
       </div>
 
-      {/* Pagination */}
-      {data && (
+      {/* Pagination — hidden for resolved (pre-executed) queries */}
+      {data && !resolvedData && (
         <DataTablePagination
           page={page}
           pageSize={pageSize}

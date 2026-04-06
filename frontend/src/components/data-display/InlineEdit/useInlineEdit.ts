@@ -7,6 +7,7 @@ import type { DiffPreview, MutationPlan } from '../../../lib/types';
 interface UseInlineEditOptions {
   entity: string;
   pk: string;
+  mutationId: string;
   field: string;
   originalValue: unknown;
 }
@@ -14,6 +15,7 @@ interface UseInlineEditOptions {
 export function useInlineEdit({
   entity,
   pk,
+  mutationId,
   field,
   originalValue,
 }: UseInlineEditOptions) {
@@ -67,9 +69,9 @@ export function useInlineEdit({
   function requestPreview() {
     const plan: MutationPlan = {
       entity,
-      operation: 'update',
-      pk,
-      data: { [field]: editValue },
+      mutation_id: mutationId,
+      record_pk: pk,
+      fields: { [field]: editValue },
     };
     previewMutation.mutate(plan);
   }
@@ -78,9 +80,9 @@ export function useInlineEdit({
     if (!diffPreview) return;
     const plan: MutationPlan = {
       entity,
-      operation: 'update',
-      pk,
-      data: { [field]: editValue },
+      mutation_id: mutationId,
+      record_pk: pk,
+      fields: { [field]: editValue },
     };
     executeMutation.mutate(plan);
   }

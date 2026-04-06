@@ -32,20 +32,20 @@ export function InlineDiffPreview({
           </tr>
         </thead>
         <tbody>
-          {preview.changes.map((change) => (
+          {preview.diff.map((change) => (
             <tr key={change.field}>
               <td className="pr-2 py-0.5 font-mono text-dui-text-secondary">
                 {change.field}
               </td>
               <td className="pr-2 py-0.5 text-dui-danger line-through">
-                {change.oldValue === null || change.oldValue === undefined
+                {change.before === null || change.before === undefined
                   ? '—'
-                  : String(change.oldValue)}
+                  : String(change.before)}
               </td>
               <td className="py-0.5 text-dui-success font-medium">
-                {change.newValue === null || change.newValue === undefined
+                {change.after === null || change.after === undefined
                   ? '—'
-                  : String(change.newValue)}
+                  : String(change.after)}
               </td>
             </tr>
           ))}

@@ -55,9 +55,9 @@ function MutationForm({ def, entity, pk, record, fields, onDone }: MutationFormP
   function handlePreview() {
     const plan: MutationPlan = {
       entity,
-      operation: def.operation,
-      pk: def.operation !== 'create' ? pk : undefined,
-      data: formData,
+      mutation_id: def.id,
+      record_pk: def.operation !== 'create' ? pk : undefined,
+      fields: formData,
     };
     previewMutation.mutate(plan);
   }
@@ -66,16 +66,16 @@ function MutationForm({ def, entity, pk, record, fields, onDone }: MutationFormP
     if (!preview) return;
     const plan: MutationPlan = {
       entity,
-      operation: def.operation,
-      pk: def.operation !== 'create' ? pk : undefined,
-      data: formData,
+      mutation_id: def.id,
+      record_pk: def.operation !== 'create' ? pk : undefined,
+      fields: formData,
     };
     executeMutation.mutate(plan);
   }
 
   return (
     <div className="mt-3 p-4 border border-dui-border rounded-lg bg-dui-surface-secondary">
-      <h4 className="text-sm font-semibold text-dui-text-primary mb-3">{def.label}</h4>
+      <h4 className="text-sm font-semibold text-dui-text-primary mb-3">{def.description}</h4>
 
       {applicableFields.map((field) => (
         <div key={field.name} className="mb-3">
@@ -187,25 +187,25 @@ export function DetailCardActions({
       <div className="flex flex-wrap gap-2">
         {updateDefs.map((def) => (
           <button
-            key={def.name}
+            key={def.id}
             type="button"
             onClick={() => setActiveAction(def)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-dui-border text-dui-text-secondary hover:bg-dui-surface-secondary focus:outline-none dui-focus-ring"
           >
             <Pencil size={11} />
-            {def.label}
+            {def.description}
           </button>
         ))}
 
         {createDefs.map((def) => (
           <button
-            key={def.name}
+            key={def.id}
             type="button"
             onClick={() => setActiveAction(def)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-dui-border text-dui-text-secondary hover:bg-dui-surface-secondary focus:outline-none dui-focus-ring"
           >
             <Plus size={11} />
-            {def.label}
+            {def.description}
           </button>
         ))}
 
@@ -233,9 +233,9 @@ export function DetailCardActions({
               onClick={() => {
                 deleteMutation.mutate({
                   entity,
-                  operation: 'delete',
-                  pk,
-                  data: {},
+                  mutation_id: deleteDefs[0].id,
+                  record_pk: pk,
+                  fields: {},
                 });
               }}
               disabled={deleteMutation.isPending}

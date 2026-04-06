@@ -12,7 +12,7 @@ export function DetailCardRelations({
   record,
   onNavigate,
 }: DetailCardRelationsProps) {
-  const fkFields = fields.filter((f) => f.fkTarget && !f.sensitive);
+  const fkFields = fields.filter((f) => f.fk && !f.sensitive);
 
   if (fkFields.length === 0) return null;
 
@@ -26,7 +26,7 @@ export function DetailCardRelations({
           const value = record[field.name];
           if (value === null || value === undefined) return null;
           const pk = String(value);
-          const targetEntity = field.fkTarget!.entity;
+          const targetEntity = field.fk!.entity;
 
           return (
             <button

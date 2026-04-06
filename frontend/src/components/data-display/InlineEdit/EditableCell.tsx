@@ -7,6 +7,7 @@ import { EnumDropdown } from '../CellRenderers/EnumCell';
 interface EditableCellProps {
   entity: string;
   pk: string;
+  mutationId: string;
   field: FieldMeta;
   value: unknown;
   children: React.ReactNode;
@@ -18,6 +19,7 @@ interface EditableCellProps {
 export function EditableCell({
   entity,
   pk,
+  mutationId,
   field,
   value,
   children,
@@ -40,6 +42,7 @@ export function EditableCell({
   } = useInlineEdit({
     entity,
     pk,
+    mutationId,
     field: field.name,
     originalValue: value,
   });

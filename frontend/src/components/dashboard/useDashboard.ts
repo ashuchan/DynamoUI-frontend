@@ -40,7 +40,13 @@ export function useDashboard() {
         [widget.id]: { widgetId: widget.id, result: null, isLoading: true, error: null },
       }));
       try {
-        const result = await apiClient.executeWidget(widget.id, params);
+        const raw = await apiClient.executeWidget(widget.id, params);
+        const result: QueryResult = {
+          rows: raw.rows,
+          totalCount: raw.totalCount,
+          page: 1,
+          pageSize: raw.rows.length,
+        };
         setExecutions((prev) => ({
           ...prev,
           [widget.id]: { widgetId: widget.id, result, isLoading: false, error: null },
@@ -73,7 +79,7 @@ export function useDashboard() {
   }, []);
 
   return {
-    categories: dashboardQuery.data ?? [],
+    categories: Array.isArray(dashboardQuery.data) ? dashboardQuery.data : [],
     isLoading: dashboardQuery.isLoading,
     isError: dashboardQuery.isError,
     error: dashboardQuery.error,

@@ -32,12 +32,12 @@ function FieldValue({
     case 'date':
       return <DateCell value={value} format={field.display?.format} />;
     case 'uuid':
-      if (field.fkTarget && onNavigate) {
+      if (field.fk && onNavigate) {
         return (
           <FKCell
             value={value}
-            targetEntity={field.fkTarget.entity}
-            targetField={field.fkTarget.field}
+            targetEntity={field.fk.entity}
+            targetField={field.fk.field}
             onNavigate={onNavigate}
           />
         );

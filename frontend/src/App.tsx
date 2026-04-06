@@ -14,15 +14,17 @@ const queryClient = new QueryClient({
 
 // ── View types ──────────────────────────────────────────────────────────────
 
+import type { ResolvedData } from './lib/types';
+
 type View =
   | { type: 'dashboard' }
-  | { type: 'entity'; entity: string }
+  | { type: 'entity'; entity: string; resolvedData?: ResolvedData }
   | { type: 'record'; entity: string; pk: string };
 
 // ── NL Search Bar ────────────────────────────────────────────────────────────
 
 interface NLBarProps {
-  onNavigate: (entity: string, pk?: string) => void;
+  onNavigate: (entity: string, pk?: string, resolvedData?: ResolvedData) => void;
 }
 
 function NLBar({ onNavigate }: NLBarProps) {
@@ -43,11 +45,7 @@ function NLBar({ onNavigate }: NLBarProps) {
       const result = await apiClient.resolve(trimmed);
 
       if (result.entity) {
-        if (result.intent === 'READ' || result.intent === 'NAVIGATE') {
-          onNavigate(result.entity);
-        } else {
-          onNavigate(result.entity);
-        }
+        onNavigate(result.entity, undefined, result.query_plan ?? undefined);
         setInput('');
       } else {
         setError('Could not determine which entity to show. Try being more specific.');
@@ -141,11 +139,11 @@ function AppShell() {
     }
   }
 
-  function handleNLNavigate(entity: string, pk?: string) {
+  function handleNLNavigate(entity: string, pk?: string, resolvedData?: ResolvedData) {
     if (pk) {
       navigate({ type: 'record', entity, pk });
     } else {
-      navigate({ type: 'entity', entity });
+      navigate({ type: 'entity', entity, resolvedData });
     }
   }
 
@@ -206,6 +204,7 @@ function AppShell() {
         {view.type === 'entity' && (
           <DataTable
             entity={view.entity}
+            resolvedData={view.resolvedData}
             onRowClick={handleRowClick}
             onNavigate={handleWidgetNavigate}
           />

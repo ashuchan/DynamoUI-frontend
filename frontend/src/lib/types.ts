@@ -6,7 +6,7 @@ export interface FieldMeta {
   nullable: boolean;
   sensitive: boolean;
   enumRef?: string;
-  fkTarget?: { entity: string; field: string };
+  fk?: { entity: string; field: string; displayField: string };
   display?: { visible: boolean; width?: number; format?: string };
 }
 
@@ -39,25 +39,25 @@ export interface QueryParams {
 }
 
 export interface MutationDef {
-  name: string;
-  label: string;
+  id: string;
   operation: 'create' | 'update' | 'delete';
+  description: string;
   fields: string[];
-  confirmationRequired: boolean;
+  requiresConfirmation: boolean;
 }
 
 export interface MutationPlan {
   entity: string;
-  operation: 'create' | 'update' | 'delete';
-  pk?: string;
-  data: Record<string, unknown>;
+  mutation_id: string;
+  record_pk?: string;
+  fields: Record<string, unknown>;
 }
 
 export interface DiffPreview {
   entity: string;
-  pk?: string;
+  record_pk?: string;
   operation: string;
-  changes: Array<{ field: string; oldValue: unknown; newValue: unknown }>;
+  diff: Array<{ field: string; before: unknown; after: unknown }>;
 }
 
 export interface MutationResult {
@@ -66,11 +66,16 @@ export interface MutationResult {
   message: string;
 }
 
+export interface ResolvedData {
+  rows: Record<string, unknown>[];
+  total_count: number;
+}
+
 export interface ResolutionResult {
   intent: 'READ' | 'MUTATE' | 'VISUALIZE' | 'NAVIGATE';
   entity?: string;
   confidence: number;
-  queryPlan?: QueryParams;
+  query_plan?: ResolvedData | null;
   patternMatch?: { patternId: string; confidence: number; matchedTrigger: string };
 }
 
@@ -87,7 +92,7 @@ export interface WidgetParam {
   label: string;
   type: string;
   required: boolean;
-  defaultValue?: unknown;
+  default?: unknown;
 }
 
 export interface Widget {
