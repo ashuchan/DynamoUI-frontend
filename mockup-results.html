@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DynamoUI — Results Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0f1e;
+      --surface:   #111827;
+      --surface-2: #1a2235;
+      --surface-3: #1e2a3d;
+      --border:    rgba(148,163,184,0.1);
+      --border-hi: rgba(99,102,241,0.3);
+      --primary:   #6366f1;
+      --primary-lt:#818cf8;
+      --text-1:    #f1f5f9;
+      --text-2:    #94a3b8;
+      --text-3:    #475569;
+      --success:   #34d399;
+      --warning:   #fbbf24;
+      --accent:    #60a5fa;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text-1);
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    header {
+      height: 52px;
+      background: rgba(17,24,39,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-1);
+      flex-shrink: 0;
+    }
+    .brand span { color: var(--primary-lt); }
+
+    .nl-bar {
+      flex: 1;
+      max-width: 540px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 14px;
+    }
+    .nl-bar svg { color: var(--primary-lt); flex-shrink: 0; }
+    .nl-bar-text {
+      font-size: 13px;
+      color: var(--text-2);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nl-bar-clear {
+      font-size: 11px;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .badge-cache {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52,211,153,0.25);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--success);
+      font-weight: 500;
+    }
+    .badge-cache::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+    }
+
+    /* ── Main 3-panel layout ── */
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr 280px;
+      gap: 0;
+      height: calc(100vh - 52px);
+      overflow: hidden;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* dividers */
+    .panel + .panel {
+      border-left: 1px solid var(--border);
+    }
+
+    /* ── Panel header ── */
+    .panel-header {
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .panel-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-3);
+      background: var(--surface-2);
+      border-radius: 5px;
+      padding: 2px 7px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── LEFT — Data table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table thead th {
+      padding: 9px 14px;
+      text-align: left;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+    .data-table thead th.num { text-align: right; }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .data-table tbody tr:hover { background: rgba(99,102,241,0.05); }
+    .data-table tbody tr.selected { background: rgba(99,102,241,0.1); }
+    .data-table tbody td {
+      padding: 9px 14px;
+      color: var(--text-1);
+      font-size: 12.5px;
+    }
+    .data-table tbody td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .data-table tbody td.rank {
+      width: 28px;
+      font-size: 11px;
+      color: var(--text-3);
+      font-weight: 700;
+    }
+
+    .rank-1  { color: #fbbf24 !important; }
+    .rank-2  { color: #94a3b8 !important; }
+    .rank-3  { color: #b45309 !important; }
+
+    .album-name {
+      font-weight: 500;
+      color: var(--text-1);
+      display: block;
+    }
+    .album-artist {
+      font-size: 11px;
+      color: var(--text-3);
+      display: block;
+      margin-top: 1px;
+    }
+
+    .mini-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mini-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--surface-3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    /* ── CENTER — Chart ── */
+    .chart-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 28px;
+      gap: 20px;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .chart-subtitle {
+      font-size: 11.5px;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+
+    /* bar chart */
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bar-label {
+      width: 160px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--text-2);
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar-track {
+      flex: 1;
+      height: 26px;
+      background: var(--surface-2);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      padding-right: 10px;
+      justify-content: flex-end;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      transition: width 0.6s ease;
+    }
+    .bar-fill.rank-1-bar { background: linear-gradient(90deg, #4f46e5, #818cf8); }
+    .bar-fill.rank-2-bar { background: linear-gradient(90deg, #3b5bdb, #6366f1); }
+    .bar-fill.rank-3-bar { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .bar-fill.rank-4-bar { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+    .bar-fill.rank-5-bar { background: linear-gradient(90deg, #1e40af, #2563eb); }
+
+    .chart-x-labels {
+      display: flex;
+      justify-content: space-between;
+      padding-left: 172px;
+      font-size: 10px;
+      color: var(--text-3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Legend */
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 2px;
+    }
+
+    /* ── RIGHT — Summary panel ── */
+    .summary-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* cache hit banner */
+    .cache-banner {
+      background: rgba(52,211,153,0.07);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cache-banner-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--success);
+    }
+    .cache-banner-pattern {
+      font-size: 12px;
+      color: var(--text-2);
+      font-style: italic;
+    }
+    .cache-banner-conf {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .conf-pct {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-1);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+    }
+    .stat-sub {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* insights section */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+
+    .insight-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .insight-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .insight-bullet {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: rgba(99,102,241,0.15);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--primary-lt);
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .insight-text {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.45;
+    }
+    .insight-text strong {
+      color: var(--text-1);
+      font-weight: 600;
+    }
+
+    /* query info box */
+    .query-info {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .qinfo-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .qinfo-key { color: var(--text-3); }
+    .qinfo-val { color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
+    .qinfo-val.green { color: var(--success); }
+
+    /* divider */
+    hr { border: none; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="brand">Dynamo<span>UI</span></div>
+
+    <div class="nl-bar">
+      <!-- Sparkle icon -->
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M10 2v2m0 12v2M2 10h2m12 0h2M4.93 4.93l1.41 1.41m7.07 7.07 1.41 1.41M4.93 15.07l1.41-1.41m7.07-7.07 1.41-1.41" stroke-linecap="round"/>
+        <circle cx="10" cy="10" r="3" fill="currentColor" opacity="0.4"/>
+      </svg>
+      <span class="nl-bar-text">show me top 5 most purchased albums by customer</span>
+      <span class="nl-bar-clear">✕ New query</span>
+    </div>
+
+    <div class="header-right">
+      <div class="badge-cache">Cache hit · 97%</div>
+    </div>
+  </header>
+
+  <!-- ── 3-panel workspace ── -->
+  <div class="workspace">
+
+    <!-- ════ LEFT — Data Table ════ -->
+    <div class="panel">
+      <div class="panel-header">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#475569" stroke-width="1.5">
+          <rect x="1" y="1" width="14" height="14" rx="2"/><line x1="1" y1="5" x2="15" y2="5"/><line x1="1" y1="9" x2="15" y2="9"/><line x1="1" y1="13" x2="15" y2="13"/><line x1="5" y1="5" x2="5" y2="15"/><line x1="10" y1="5" x2="10" y2="15"/>
+        </svg>
+        <span class="panel-title">Results</span>
+        <span class="panel-count">5 rows · Invoice_Line</span>
+      </div>
+
+      <div class="panel-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:28px">#</th>
+              <th>Album</th>
+              <th class="num">Units</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="selected">
+              <td class="rank rank-1">①</td>
+              <td>
+                <span class="album-name">Minha Historia</span>
+                <span class="album-artist">Chico Buarque</span>
+                <div class="mini-bar" style="margin-top:5px">
+                  <div class="mini-bar-track"><div class="mini-bar-fill" style="width:100%"></div></div>
+                </div>
+              </td>
+              <td class="num">27</td>
+            </tr>
+            <tr>
+              <td class="rank rank-2">②</td>
+              <td>
+                <span class="album-name">Unplugged</span>
+                <span class="album-artist">Eric Clapton</span>
+                <div class="mini-bar" style="margin-top:5px">
+                  <div class="mini-bar-track"><div class="mini-bar-fill" style="width:85%"></div></div>
+                </div>
+              </td>
+              <td class="num">23</td>
+            </tr>
+            <tr>
+              <td class="rank rank-3">③</td>
+              <td>
+                <span class="album-name">Greatest Hits</span>
+                <span class="album-artist">Lenny Kravitz</span>
+                <div class="mini-bar" style="margin-top:5px">
+                  <div class="mini-bar-track"><div class="mini-bar-fill" style="width:74%"></div></div>
+                </div>
+              </td>
+              <td class="num">20</td>
+            </tr>
+            <tr>
+              <td class="rank" style="color:#6b7280">④</td>
+              <td>
+                <span class="album-name">Jagged Little Pill</span>
+                <span class="album-artist">Alanis Morissette</span>
+                <div class="mini-bar" style="margin-top:5px">
+                  <div class="mini-bar-track"><div class="mini-bar-fill" style="width:63%"></div></div>
+                </div>
+              </td>
+              <td class="num">17</td>
+            </tr>
+            <tr>
+              <td class="rank" style="color:#6b7280">⑤</td>
+              <td>
+                <span class="album-name">New Adventures In Hi-Fi</span>
+                <span class="album-artist">R.E.M.</span>
+                <div class="mini-bar" style="margin-top:5px">
+                  <div class="mini-bar-track"><div class="mini-bar-fill" style="width:52%"></div></div>
+                </div>
+              </td>
+              <td class="num">14</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ CENTER — Chart ════ -->
+    <div class="panel" style="background: var(--surface);">
+      <div class="panel-header">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#475569" stroke-width="1.5">
+          <rect x="1" y="8" width="3" height="7" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="2" width="3" height="13" rx="1"/>
+        </svg>
+        <span class="panel-title">Visualisation</span>
+        <span class="panel-count" style="font-size:10px; color: #6366f1;">Bar · auto-selected</span>
+      </div>
+
+      <div class="panel-body" style="display:flex; flex-direction:column; padding: 0;">
+        <div class="chart-area">
+          <div>
+            <div class="chart-title">Top 5 Albums by Purchase Volume</div>
+            <div class="chart-subtitle">Grouped by album · Invoice_Line · all time</div>
+          </div>
+
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-label">Minha Historia</div>
+              <div class="bar-track">
+                <div class="bar-fill rank-1-bar" style="width:100%">27</div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Unplugged</div>
+              <div class="bar-track">
+                <div class="bar-fill rank-2-bar" style="width:85%">23</div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Greatest Hits</div>
+              <div class="bar-track">
+                <div class="bar-fill rank-3-bar" style="width:74%">20</div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Jagged Little Pill</div>
+              <div class="bar-track">
+                <div class="bar-fill rank-4-bar" style="width:63%">17</div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">New Adventures In Hi-Fi</div>
+              <div class="bar-track">
+                <div class="bar-fill rank-5-bar" style="width:52%">14</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-x-labels">
+            <span>0</span>
+            <span>7</span>
+            <span>14</span>
+            <span>21</span>
+            <span>27</span>
+          </div>
+
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background: linear-gradient(135deg,#6366f1,#60a5fa)"></div>
+              <span>Purchase count (units)</span>
+            </div>
+            <div class="legend-item" style="margin-left:auto; font-size:10px; color:#334155;">
+              Chart type chosen by LLM based on query intent
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RIGHT — Summary ════ -->
+    <div class="panel" style="background: var(--surface);">
+      <div class="panel-header">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#475569" stroke-width="1.5">
+          <circle cx="8" cy="8" r="7"/><path d="M8 5v4l2.5 2" stroke-linecap="round"/>
+        </svg>
+        <span class="panel-title">Analysis</span>
+      </div>
+
+      <div class="panel-body">
+        <div class="summary-body">
+
+          <!-- Cache hit -->
+          <div class="cache-banner">
+            <div class="cache-banner-label">Pattern Cache Hit</div>
+            <div class="cache-banner-pattern">"top {n} albums by purchase count"</div>
+            <div class="cache-banner-conf">Confidence: <span class="conf-pct">97%</span> · No LLM used</div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Orders</div>
+              <div class="stat-value">412</div>
+              <div class="stat-sub">across all customers</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Albums</div>
+              <div class="stat-value">347</div>
+              <div class="stat-sub">unique titles</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Top 5 Share</div>
+              <div class="stat-value">25%</div>
+              <div class="stat-sub">of all purchases</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Avg / Album</div>
+              <div class="stat-value">4.2</div>
+              <div class="stat-sub">units sold</div>
+            </div>
+          </div>
+
+          <hr />
+
+          <!-- Insights -->
+          <div>
+            <div class="section-label">Key Insights</div>
+            <ul class="insight-list">
+              <li class="insight-item">
+                <div class="insight-bullet">1</div>
+                <div class="insight-text"><strong>Minha Historia</strong> leads with 27 units — 17% ahead of #2.</div>
+              </li>
+              <li class="insight-item">
+                <div class="insight-bullet">2</div>
+                <div class="insight-text">Top 5 albums span <strong>4 genres</strong>: Samba, Blues, Rock, Alternative.</div>
+              </li>
+              <li class="insight-item">
+                <div class="insight-bullet">3</div>
+                <div class="insight-text"><strong>Lenny Kravitz</strong> and <strong>R.E.M.</strong> both place Greatest Hits compilations in the top 5.</div>
+              </li>
+              <li class="insight-item">
+                <div class="insight-bullet">4</div>
+                <div class="insight-text">The long tail is steep: albums ranked 6–347 average only <strong>3.1 units</strong>.</div>
+              </li>
+              <li class="insight-item">
+                <div class="insight-bullet">5</div>
+                <div class="insight-text">No single artist dominates — catalogue breadth drives volume over stardom.</div>
+              </li>
+            </ul>
+          </div>
+
+          <hr />
+
+          <!-- Query metadata -->
+          <div>
+            <div class="section-label">Query Metadata</div>
+            <div class="query-info">
+              <div class="qinfo-row">
+                <span class="qinfo-key">Entity</span>
+                <span class="qinfo-val">Invoice_Line</span>
+              </div>
+              <div class="qinfo-row">
+                <span class="qinfo-key">Pattern ID</span>
+                <span class="qinfo-val">album_top_n_by_count</span>
+              </div>
+              <div class="qinfo-row">
+                <span class="qinfo-key">Cache source</span>
+                <span class="qinfo-val green">Pattern cache</span>
+              </div>
+              <div class="qinfo-row">
+                <span class="qinfo-key">LLM calls</span>
+                <span class="qinfo-val green">0</span>
+              </div>
+              <div class="qinfo-row">
+                <span class="qinfo-key">Resolved in</span>
+                <span class="qinfo-val">12 ms</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

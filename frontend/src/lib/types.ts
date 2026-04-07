@@ -77,6 +77,7 @@ export interface ResolutionResult {
   confidence: number;
   query_plan?: ResolvedData | null;
   patternMatch?: { patternId: string; confidence: number; matchedTrigger: string };
+  llm_cost_usd?: number | null;
 }
 
 export interface EnumOption {

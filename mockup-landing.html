@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DynamoUI — Landing Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0f1e;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Animated voice-signal background ── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Radial gradient glow */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 60%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 20% at 80% 20%, rgba(59, 130, 246, 0.07) 0%, transparent 60%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Content layer ── */
+    .content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 760px;
+      padding: 0 24px;
+    }
+
+    /* ── Brand ── */
+    .brand {
+      text-align: center;
+    }
+    .brand-name {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      color: #f1f5f9;
+    }
+    .brand-name span {
+      background: linear-gradient(135deg, #818cf8, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .brand-tagline {
+      margin-top: 8px;
+      font-size: 15px;
+      color: #64748b;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Voice signal animation (SVG waves) ── */
+    .voice-signal {
+      width: 100%;
+      height: 64px;
+      overflow: visible;
+    }
+    .wave-path {
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+    }
+    .wave-path.w1 { stroke: rgba(99, 102, 241, 0.55); animation: wavePulse 2.4s ease-in-out infinite; }
+    .wave-path.w2 { stroke: rgba(99, 102, 241, 0.30); animation: wavePulse 2.4s ease-in-out infinite 0.3s; }
+    .wave-path.w3 { stroke: rgba(99, 102, 241, 0.15); animation: wavePulse 2.4s ease-in-out infinite 0.6s; }
+    .wave-path.w4 { stroke: rgba(139, 92, 246, 0.10); animation: wavePulse 2.4s ease-in-out infinite 0.9s; }
+
+    @keyframes wavePulse {
+      0%, 100% { d: path("M0,32 C60,32 80,16 140,32 C200,48 220,16 280,32 C340,48 360,16 420,32 C480,48 500,16 560,32 C620,48 640,16 700,32 C760,48 780,32 800,32"); opacity: 1; }
+      50%        { d: path("M0,32 C60,20 80,44 140,32 C200,20 220,44 280,32 C340,20 360,44 420,32 C480,20 500,44 560,32 C620,20 640,44 700,32 C760,20 780,32 800,32"); opacity: 0.7; }
+    }
+
+    /* ── Prompt container ── */
+    .prompt-wrap {
+      width: 100%;
+      position: relative;
+    }
+
+    .prompt-box {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.0),
+        0 4px 24px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .prompt-box:focus-within {
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow:
+        0 0 0 3px rgba(99,102,241,0.12),
+        0 4px 32px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .prompt-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: #6366f1;
+      opacity: 0.9;
+    }
+
+    .prompt-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: #e2e8f0;
+      caret-color: #818cf8;
+      letter-spacing: 0.1px;
+    }
+    .prompt-input::placeholder { color: #475569; }
+
+    .prompt-submit {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.15s, transform 0.15s;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.35);
+    }
+    .prompt-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+    .prompt-submit:active { transform: translateY(0); }
+
+    /* ── Hint pills ── */
+    .hints {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hint-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: #64748b;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .hint-pill:hover { color: #94a3b8; border-color: rgba(148,163,184,0.25); }
+
+    /* ── Bottom caption ── */
+    .caption {
+      font-size: 11.5px;
+      color: #334155;
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Floating grid lines (decorative) ── */
+    .grid-lines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 0%, transparent 80%);
+    }
+
+    /* ── Small floating dot accent ── */
+    .dot-accent {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .dot-accent.a { width:300px; height:300px; top:-60px; left:-80px; background: rgba(99,102,241,0.07); animation: floatDot 8s ease-in-out infinite; }
+    .dot-accent.b { width:200px; height:200px; bottom:-40px; right:-60px; background: rgba(139,92,246,0.07); animation: floatDot 10s ease-in-out infinite 2s; }
+
+    @keyframes floatDot {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(20px, -20px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+  <div class="grid-lines"></div>
+  <div class="dot-accent a"></div>
+  <div class="dot-accent b"></div>
+
+  <div class="content">
+
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-name">Dynamo<span>UI</span></div>
+      <div class="brand-tagline">Natural language · Instant data interfaces</div>
+    </div>
+
+    <!-- Animated voice signal -->
+    <svg class="voice-signal" viewBox="0 0 800 64" preserveAspectRatio="none">
+      <path class="wave-path w4" d="M0,32 C80,12 100,52 200,32 C300,12 320,52 420,32 C520,12 540,52 640,32 C720,12 760,44 800,32"/>
+      <path class="wave-path w3" d="M0,32 C60,18 90,46 180,32 C270,18 310,46 400,32 C490,18 530,46 620,32 C710,18 760,40 800,32"/>
+      <path class="wave-path w2" d="M0,32 C50,22 80,42 160,32 C240,22 280,42 380,32 C460,22 500,42 600,32 C680,22 740,38 800,32"/>
+      <path class="wave-path w1" d="M0,32 C40,26 70,38 140,32 C220,26 260,38 360,32 C440,26 480,38 580,32 C660,26 720,36 800,32"/>
+    </svg>
+
+    <!-- Prompt bar -->
+    <div class="prompt-wrap">
+      <div class="prompt-box">
+        <!-- Sparkle icon (inline SVG) -->
+        <svg class="prompt-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M10 2v2m0 12v2M2 10h2m12 0h2M4.93 4.93l1.41 1.41m7.07 7.07 1.41 1.41M4.93 15.07l1.41-1.41m7.07-7.07 1.41-1.41" stroke-linecap="round"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity="0.5"/>
+        </svg>
+        <input class="prompt-input" type="text" placeholder="Show me top 5 most purchased albums by customer…" value="show me top 5 most purchased albums by customer" />
+        <button class="prompt-submit">Ask →</button>
+      </div>
+
+      <!-- Hint pills -->
+      <div class="hints">
+        <span class="hint-pill">list recent orders</span>
+        <span class="hint-pill">show active employees</span>
+        <span class="hint-pill">top albums by revenue</span>
+        <span class="hint-pill">customers in Germany</span>
+      </div>
+    </div>
+
+    <div class="caption">Press Enter or click Ask · Powered by pattern cache + LLM fallback</div>
+  </div>
+
+</body>
+</html>

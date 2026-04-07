@@ -2,85 +2,226 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── DynamoUI Design Tokens ─────────────────────────────────────────────────
+   Dark AI theme — always dark. No light/dark split.
+   All colours consumed via Tailwind dui-* classes or component CSS classes.
+   ────────────────────────────────────────────────────────────────────────── */
 :root {
-  --dui-primary: #3b82f6;
-  --dui-primary-hover: #2563eb;
-  --dui-surface: #ffffff;
-  --dui-surface-secondary: #f3f4f6;
-  --dui-surface-tertiary: #e5e7eb;
-  --dui-text-primary: #111827;
-  --dui-text-secondary: #6b7280;
-  --dui-text-muted: #9ca3af;
-  --dui-border: #e5e7eb;
-  --dui-border-focus: #3b82f6;
-  --dui-danger: #ef4444;
-  --dui-danger-hover: #dc2626;
-  --dui-success: #10b981;
-  --dui-warning: #f59e0b;
-  --dui-table-header-bg: #f9fafb;
-  --dui-table-row-hover: #f3f4f6;
-  --dui-table-row-stripe: #fafafa;
-  --dui-badge-bg: #dbeafe;
-  --dui-badge-text: #1e40af;
+  /* Brand */
+  --dui-primary:             #818cf8;   /* indigo-400 */
+  --dui-primary-hover:       #a5b4fc;   /* indigo-300 */
+  --dui-accent:              #60a5fa;   /* blue-400 — numeric accents */
+  --dui-accent-2:            #c084fc;   /* purple-400 */
+
+  /* Page / panel surfaces */
+  --dui-bg:                  #080d1a;   /* deepest page background */
+  --dui-surface:             #111827;   /* panel / card background */
+  --dui-surface-secondary:   #0d1420;   /* workspace background */
+  --dui-surface-tertiary:    #1a2235;   /* slightly raised surface */
+  --dui-surface-card:        #1e2a3d;   /* stat cards */
+
+  /* Text */
+  --dui-text-primary:        #f1f5f9;
+  --dui-text-secondary:      #94a3b8;
+  --dui-text-muted:          #475569;
+
+  /* Borders */
+  --dui-border:              rgba(148, 163, 184, 0.10);
+  --dui-border-focus:        #818cf8;
+
+  /* Semantic */
+  --dui-danger:              #f87171;
+  --dui-danger-hover:        #fca5a5;
+  --dui-success:             #34d399;
+  --dui-warning:             #fbbf24;
+
+  /* Table */
+  --dui-table-header-bg:     #111827;
+  --dui-table-row-hover:     rgba(99, 102, 241, 0.06);
+  --dui-table-row-stripe:    rgba(255, 255, 255, 0.01);
+
+  /* Badges */
+  --dui-badge-bg:            rgba(99, 102, 241, 0.15);
+  --dui-badge-text:          #a5b4fc;
+
+  /* Chart palette — 5 gradient stops ranked 1→5 */
+  --dui-chart-1:             #6366f1;
+  --dui-chart-2:             #4f46e5;
+  --dui-chart-3:             #3b82f6;
+  --dui-chart-4:             #2563eb;
+  --dui-chart-5:             #1d4ed8;
+
+  /* Landing page wave colours */
+  --dui-wave-1:              rgba(99, 102, 241, 0.55);
+  --dui-wave-2:              rgba(99, 102, 241, 0.28);
+  --dui-wave-3:              rgba(99, 102, 241, 0.13);
+  --dui-wave-4:              rgba(139, 92, 246, 0.07);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --dui-primary: #60a5fa;
-    --dui-primary-hover: #93c5fd;
-    --dui-surface: #1f2937;
-    --dui-surface-secondary: #111827;
-    --dui-surface-tertiary: #374151;
-    --dui-text-primary: #f9fafb;
-    --dui-text-secondary: #d1d5db;
-    --dui-text-muted: #9ca3af;
-    --dui-border: #374151;
-    --dui-border-focus: #60a5fa;
-    --dui-danger: #f87171;
-    --dui-danger-hover: #fca5a5;
-    --dui-success: #34d399;
-    --dui-warning: #fbbf24;
-    --dui-table-header-bg: #1f2937;
-    --dui-table-row-hover: #374151;
-    --dui-table-row-stripe: #1a2332;
-    --dui-badge-bg: #1e3a5f;
-    --dui-badge-text: #93c5fd;
-  }
-}
-
-* {
-  box-sizing: border-box;
-}
+/* ── Base ───────────────────────────────────────────────────────────────────*/
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--dui-surface-secondary);
+  background-color: var(--dui-bg);
   color: var(--dui-text-primary);
 }
 
-/* Focus ring utility */
+/* ── Focus ring ─────────────────────────────────────────────────────────────*/
 .dui-focus-ring:focus-visible {
   outline: 2px solid var(--dui-border-focus);
   outline-offset: 2px;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
+/* ── Scrollbar ──────────────────────────────────────────────────────────────*/
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--dui-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dui-text-muted); }
+
+/* ── Landing page ───────────────────────────────────────────────────────────*/
+
+/* Ambient background glow behind the prompt */
+.dui-landing-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 60%, rgba(99, 102, 241, 0.11) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(139, 92, 246, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 20% at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+}
+
+/* Decorative dot grid */
+.dui-landing-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--dui-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dui-border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 0%, transparent 80%);
+}
+
+/* Floating ambient blobs */
+.dui-landing-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  animation: duiBlobFloat 10s ease-in-out infinite;
+}
+
+@keyframes duiBlobFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(18px, -18px); }
+}
+
+/* Glassmorphism prompt box */
+.dui-prompt-box {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 4px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dui-prompt-box:focus-within {
+  border-color: rgba(129, 140, 248, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.11),
+    0 4px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Submit button */
+.dui-prompt-submit {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 14px rgba(99, 102, 241, 0.38);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.dui-prompt-submit:hover   { opacity: 0.88; transform: translateY(-1px); }
+.dui-prompt-submit:active  { transform: translateY(0); opacity: 1; }
+.dui-prompt-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Wave paths */
+.dui-wave { fill: none; stroke-linecap: round; }
+.dui-wave-1 { stroke: var(--dui-wave-1); animation: duiWave 2.8s ease-in-out infinite; }
+.dui-wave-2 { stroke: var(--dui-wave-2); animation: duiWave 2.8s ease-in-out infinite 0.35s; }
+.dui-wave-3 { stroke: var(--dui-wave-3); animation: duiWave 2.8s ease-in-out infinite 0.70s; }
+.dui-wave-4 { stroke: var(--dui-wave-4); animation: duiWave 2.8s ease-in-out infinite 1.05s; }
+
+@keyframes duiWave {
+  0%, 100% { opacity: 1;   transform: scaleY(1); }
+  50%       { opacity: 0.6; transform: scaleY(0.55); }
+}
+
+/* ── Results layout ─────────────────────────────────────────────────────────*/
+
+/* Cache hit badge */
+.dui-cache-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(52, 211, 153, 0.09);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  border-radius: 999px;
+  color: var(--dui-success);
+  font-weight: 500;
+}
+.dui-cache-badge::before {
+  content: '';
+  display: inline-block;
   width: 6px;
   height: 6px;
+  border-radius: 50%;
+  background: var(--dui-success);
+  flex-shrink: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--dui-surface-secondary);
+/* LLM badge */
+.dui-llm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(251, 191, 36, 0.09);
+  border: 1px solid rgba(251, 191, 36, 0.22);
+  border-radius: 999px;
+  color: var(--dui-warning);
+  font-weight: 500;
+}
+.dui-llm-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dui-warning);
+  flex-shrink: 0;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--dui-border);
-  border-radius: 3px;
+/* Cache hit banner in summary panel */
+.dui-cache-banner {
+  background: rgba(52, 211, 153, 0.06);
+  border: 1px solid rgba(52, 211, 153, 0.18);
+  border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--dui-text-muted);
+/* Stat card */
+.dui-stat-card {
+  background: var(--dui-surface-card);
+  border: 1px solid var(--dui-border);
+  border-radius: 10px;
 }
