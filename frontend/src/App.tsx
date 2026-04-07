@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LogOut, Settings } from 'lucide-react';
 import { LandingPage } from './components/landing/LandingPage';
 import { ResultsLayout } from './components/results/ResultsLayout';
 import { DetailCard } from './components/data-display/DetailCard/DetailCard';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AdminPortal } from './admin/AdminPortal';
 import type { ResolutionResult } from './lib/types';
-import { useState } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +20,66 @@ const queryClient = new QueryClient({
 type View =
   | { type: 'landing' }
   | { type: 'results'; query: string; result: ResolutionResult }
-  | { type: 'record'; entity: string; pk: string };
+  | { type: 'record'; entity: string; pk: string }
+  | { type: 'admin' };
+
+// ── Floating tenant / admin menu ─────────────────────────────────────────────
+// Sits in the top-right of every view so signed-in users can reach the admin
+// portal and sign out without cluttering the new landing/results layout.
+
+function TenantOverlay({
+  onOpenAdmin,
+  onExitAdmin,
+  inAdmin,
+}: {
+  onOpenAdmin: () => void;
+  onExitAdmin: () => void;
+  inAdmin: boolean;
+}) {
+  const { user, tenant, logout } = useAuth();
+  if (!user || !tenant) return null;
+
+  const canAdmin = tenant.role === 'owner' || tenant.role === 'admin';
+
+  return (
+    <div
+      className="fixed top-3 right-3 z-50 flex items-center gap-2 rounded-lg border border-dui-border bg-dui-surface/80 px-2 py-1.5 shadow-sm backdrop-blur"
+    >
+      <div className="flex flex-col items-end leading-tight pr-1">
+        <span className="text-xs font-medium text-dui-text-primary truncate max-w-[140px]">
+          {tenant.name}
+        </span>
+        <span className="text-[10px] text-dui-text-muted truncate max-w-[140px]">
+          {user.email} · {tenant.role}
+        </span>
+      </div>
+      {canAdmin && (
+        <button
+          type="button"
+          onClick={inAdmin ? onExitAdmin : onOpenAdmin}
+          aria-label={inAdmin ? 'Close admin portal' : 'Open admin portal'}
+          className={[
+            'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs focus:outline-none dui-focus-ring transition-colors',
+            inAdmin
+              ? 'bg-dui-surface-secondary text-dui-text-primary'
+              : 'text-dui-text-secondary hover:bg-dui-surface-secondary',
+          ].join(' ')}
+        >
+          <Settings size={13} />
+          Admin
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={logout}
+        aria-label="Sign out"
+        className="inline-flex items-center rounded-md p-1.5 text-dui-text-secondary hover:bg-dui-surface-secondary focus:outline-none dui-focus-ring"
+      >
+        <LogOut size={14} />
+      </button>
+    </div>
+  );
+}
 
 // ── App shell ─────────────────────────────────────────────────────────────────
 
@@ -70,6 +133,40 @@ function AppShell() {
     }
   }
 
+  function openAdmin() {
+    push({ type: 'admin' });
+  }
+
+  function exitAdmin() {
+    const prev = history[history.length - 1];
+    if (prev) {
+      goBack();
+    } else {
+      setView({ type: 'landing' });
+      setHistory([]);
+    }
+  }
+
+  const overlay = (
+    <TenantOverlay
+      inAdmin={view.type === 'admin'}
+      onOpenAdmin={openAdmin}
+      onExitAdmin={exitAdmin}
+    />
+  );
+
+  // ── Admin portal view ────────────────────────────────────────────────────
+  if (view.type === 'admin') {
+    return (
+      <div className="min-h-screen bg-dui-bg">
+        {overlay}
+        <main className="max-w-7xl w-full mx-auto px-4 py-6">
+          <AdminPortal />
+        </main>
+      </div>
+    );
+  }
+
   // ── Record detail view ────────────────────────────────────────────────────
   if (view.type === 'record') {
     return (
@@ -77,6 +174,7 @@ function AppShell() {
         className="min-h-screen bg-dui-bg flex flex-col"
         style={{ '--dui-surface-secondary': 'var(--dui-bg)' } as React.CSSProperties}
       >
+        {overlay}
         {/* Minimal header for record view */}
         <header
           className="flex items-center gap-4 px-4 border-b border-dui-border flex-shrink-0"
@@ -108,18 +206,26 @@ function AppShell() {
   // ── Results view ──────────────────────────────────────────────────────────
   if (view.type === 'results') {
     return (
-      <ResultsLayout
-        query={view.query}
-        result={view.result}
-        onRowClick={handleRowClick}
-        onNewQuery={handleNewQuery}
-        onBack={() => { setView({ type: 'landing' }); setHistory([]); }}
-      />
+      <>
+        {overlay}
+        <ResultsLayout
+          query={view.query}
+          result={view.result}
+          onRowClick={handleRowClick}
+          onNewQuery={handleNewQuery}
+          onBack={() => { setView({ type: 'landing' }); setHistory([]); }}
+        />
+      </>
     );
   }
 
   // ── Landing view ──────────────────────────────────────────────────────────
-  return <LandingPage onResolved={handleResolved} />;
+  return (
+    <>
+      {overlay}
+      <LandingPage onResolved={handleResolved} />
+    </>
+  );
 }
 
 // ── Root ──────────────────────────────────────────────────────────────────────
@@ -127,7 +233,11 @@ function AppShell() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell />
+      <AuthProvider>
+        <ProtectedRoute>
+          <AppShell />
+        </ProtectedRoute>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
