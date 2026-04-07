@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Database, Wand2 } from 'lucide-react';
+import { Database, FileCode, Wand2 } from 'lucide-react';
 import { ConnectionsPage } from './ConnectionsPage';
 import { ScaffoldJobsPage } from './ScaffoldJobsPage';
+import { RegistryPage } from './RegistryPage';
 
-type AdminTab = 'connections' | 'scaffold';
+type AdminTab = 'connections' | 'scaffold' | 'registry';
 
 /**
  * Top-level admin portal — minimal in-tree router. Owners and admins can
@@ -30,9 +31,16 @@ export function AdminPortal() {
           active={tab === 'scaffold'}
           onClick={() => setTab('scaffold')}
         />
+        <TabButton
+          icon={<FileCode size={14} />}
+          label="Registry"
+          active={tab === 'registry'}
+          onClick={() => setTab('registry')}
+        />
       </div>
       {tab === 'connections' && <ConnectionsPage />}
       {tab === 'scaffold' && <ScaffoldJobsPage />}
+      {tab === 'registry' && <RegistryPage />}
     </div>
   );
 }

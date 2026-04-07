@@ -54,3 +54,24 @@ export interface ScaffoldJob {
   created_at: string;
   updated_at: string;
 }
+
+export type RegistryResourceType = 'skill' | 'enum' | 'pattern' | 'widget';
+
+export interface RegistryEntrySummary {
+  id: string;
+  name: string;
+  checksum: string;
+  updated_at: string;
+}
+
+export interface RegistryEntryRead {
+  id: string;
+  tenant_id: string;
+  resource_type: RegistryResourceType;
+  name: string;
+  yaml_source: string;
+  parsed_json: Record<string, unknown>;
+  checksum: string;
+  created_at: string;
+  updated_at: string;
+}
