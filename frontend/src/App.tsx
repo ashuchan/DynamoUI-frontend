@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Search, Loader2, AlertCircle, LayoutDashboard, LogOut, Table2 } from 'lucide-react';
+import { Search, Loader2, AlertCircle, LayoutDashboard, LogOut, Settings, Table2 } from 'lucide-react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { DataTable } from './components/data-display/DataTable/DataTable';
 import { DetailCard } from './components/data-display/DetailCard/DetailCard';
 import { apiClient } from './lib/apiClient';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AdminPortal } from './admin/AdminPortal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +22,8 @@ import type { ResolvedData } from './lib/types';
 type View =
   | { type: 'dashboard' }
   | { type: 'entity'; entity: string; resolvedData?: ResolvedData }
-  | { type: 'record'; entity: string; pk: string };
+  | { type: 'record'; entity: string; pk: string }
+  | { type: 'admin' };
 
 // ── NL Search Bar ────────────────────────────────────────────────────────────
 
@@ -119,6 +121,21 @@ function NavTab({
       {icon}
       {label}
     </button>
+  );
+}
+
+// ── Admin tab — only visible to owners + admins ─────────────────────────────
+
+function AdminTab({ active, onClick }: { active: boolean; onClick: () => void }) {
+  const { tenant } = useAuth();
+  if (!tenant || (tenant.role !== 'owner' && tenant.role !== 'admin')) return null;
+  return (
+    <NavTab
+      label="Admin"
+      icon={<Settings size={14} />}
+      active={active}
+      onClick={onClick}
+    />
   );
 }
 
@@ -220,6 +237,7 @@ function AppShell() {
                 }
               />
             )}
+            <AdminTab active={view.type === 'admin'} onClick={() => navigate({ type: 'admin' })} />
             <TenantMenu />
           </nav>
         </div>
@@ -248,6 +266,8 @@ function AppShell() {
             onNavigate={handleWidgetNavigate}
           />
         )}
+
+        {view.type === 'admin' && <AdminPortal />}
       </main>
     </div>
   );

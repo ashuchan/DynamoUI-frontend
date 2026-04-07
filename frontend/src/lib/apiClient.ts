@@ -16,6 +16,13 @@ import type {
   LoginPayload,
   SignupPayload,
 } from '../auth/types';
+import type {
+  ConnectionCreatePayload,
+  ConnectionRead,
+  ConnectionTestResult,
+  ConnectionUpdatePayload,
+  ScaffoldJob,
+} from '../admin/types';
 import { getCurrentToken } from '../auth/tokenStorage';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
@@ -109,6 +116,48 @@ export const apiClient = {
     }),
 
   authMe: () => apiFetch<AuthResponse>('/auth/me'),
+
+  // ---- Admin: connections ----
+  listConnections: () => apiFetch<ConnectionRead[]>('/admin/connections'),
+
+  createConnection: (payload: ConnectionCreatePayload) =>
+    apiFetch<ConnectionRead>('/admin/connections', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  updateConnection: (id: string, payload: ConnectionUpdatePayload) =>
+    apiFetch<ConnectionRead>(`/admin/connections/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  deleteConnection: (id: string) =>
+    fetch(`${API_BASE}/admin/connections/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(getCurrentToken() ? { Authorization: `Bearer ${getCurrentToken()}` } : {}),
+      },
+    }).then((r) => {
+      if (!r.ok) throw new ApiClientError(r.status, `delete failed: ${r.status}`);
+    }),
+
+  testConnection: (id: string) =>
+    apiFetch<ConnectionTestResult>(`/admin/connections/${id}/test`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }),
+
+  // ---- Admin: scaffold jobs ----
+  startScaffold: (connectionId: string, payload: { schema_filter?: string; table_filter?: string[] }) =>
+    apiFetch<ScaffoldJob>(`/admin/connections/${connectionId}/scaffold`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  listScaffoldJobs: () => apiFetch<ScaffoldJob[]>('/admin/scaffold-jobs'),
+
+  getScaffoldJob: (jobId: string) => apiFetch<ScaffoldJob>(`/admin/scaffold-jobs/${jobId}`),
 
   resolve: (input: string) =>
     apiFetch<ResolutionResult>('/resolve', {
