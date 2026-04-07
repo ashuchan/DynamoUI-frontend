@@ -11,10 +11,16 @@ import type {
   QueryParams,
   WidgetDashboard,
 } from './types';
+import type {
+  AuthResponse,
+  LoginPayload,
+  SignupPayload,
+} from '../auth/types';
+import { getCurrentToken } from '../auth/tokenStorage';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
 
-class ApiClientError extends Error {
+export class ApiClientError extends Error {
   constructor(
     public readonly status: number,
     message: string,
@@ -29,10 +35,12 @@ async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const token = getCurrentToken();
   const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -81,6 +89,27 @@ function toQueryString(params: QueryParams): string {
 }
 
 export const apiClient = {
+  // ---- Auth ----
+  authSignup: (payload: SignupPayload) =>
+    apiFetch<AuthResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  authLogin: (payload: LoginPayload) =>
+    apiFetch<AuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  authGoogle: (idToken: string) =>
+    apiFetch<AuthResponse>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ id_token: idToken }),
+    }),
+
+  authMe: () => apiFetch<AuthResponse>('/auth/me'),
+
   resolve: (input: string) =>
     apiFetch<ResolutionResult>('/resolve', {
       method: 'POST',

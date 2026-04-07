@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Search, Loader2, AlertCircle, LayoutDashboard, Table2 } from 'lucide-react';
+import { Search, Loader2, AlertCircle, LayoutDashboard, LogOut, Table2 } from 'lucide-react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { DataTable } from './components/data-display/DataTable/DataTable';
 import { DetailCard } from './components/data-display/DetailCard/DetailCard';
 import { apiClient } from './lib/apiClient';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,6 +122,33 @@ function NavTab({
   );
 }
 
+// ── Tenant menu ─────────────────────────────────────────────────────────────
+
+function TenantMenu() {
+  const { user, tenant, logout } = useAuth();
+  if (!user || !tenant) return null;
+  return (
+    <div className="flex items-center gap-2 pl-2 ml-1 border-l border-dui-border">
+      <div className="flex flex-col items-end leading-tight">
+        <span className="text-xs font-medium text-dui-text-primary truncate max-w-[140px]">
+          {tenant.name}
+        </span>
+        <span className="text-[10px] text-dui-text-muted truncate max-w-[140px]">
+          {user.email} · {tenant.role}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={logout}
+        aria-label="Sign out"
+        className="inline-flex items-center rounded-md p-1.5 text-dui-text-secondary hover:bg-dui-surface-secondary focus:outline-none dui-focus-ring"
+      >
+        <LogOut size={14} />
+      </button>
+    </div>
+  );
+}
+
 // ── App Shell ────────────────────────────────────────────────────────────────
 
 function AppShell() {
@@ -191,6 +220,7 @@ function AppShell() {
                 }
               />
             )}
+            <TenantMenu />
           </nav>
         </div>
       </header>
@@ -228,7 +258,11 @@ function AppShell() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell />
+      <AuthProvider>
+        <ProtectedRoute>
+          <AppShell />
+        </ProtectedRoute>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
