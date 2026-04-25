@@ -32,15 +32,24 @@ export function ConnectionForm({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
+    let parsedPort: number | undefined;
+    if (port.trim() !== '') {
+      const n = Number(port);
+      if (!Number.isInteger(n) || n < 1 || n > 65535) {
+        setError('Port must be an integer between 1 and 65535.');
+        return;
+      }
+      parsedPort = n;
+    }
+    setSubmitting(true);
     const payload: ConnectionCreatePayload = {
-      name,
+      name: name.trim(),
       adapter_kind: adapterKind,
-      host: host || undefined,
-      port: port ? Number(port) : undefined,
-      database: database || undefined,
-      username: username || undefined,
+      host: host.trim() || undefined,
+      port: parsedPort,
+      database: database.trim() || undefined,
+      username: username.trim() || undefined,
       password: password || undefined,
     };
     try {

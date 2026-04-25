@@ -26,13 +26,14 @@ export function AuthScreen() {
     setSubmitting(true);
     try {
       if (mode === 'signin') {
-        await login({ email, password });
+        await login({ email: email.trim(), password });
       } else {
+        const trimmedTenant = tenantName.trim();
         await signup({
-          email,
+          email: email.trim(),
           password,
-          display_name: displayName,
-          tenant_name: tenantName || undefined,
+          display_name: displayName.trim(),
+          tenant_name: trimmedTenant || undefined,
         });
       }
     } catch {

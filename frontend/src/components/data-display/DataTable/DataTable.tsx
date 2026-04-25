@@ -136,7 +136,7 @@ export function DataTable({ entity, resolvedData, onRowClick, onNavigate }: Data
 
                 return (
                   <DataTableRow
-                    key={pk}
+                    key={`${pk}-${index}`}
                     row={rawRow}
                     fields={visibleFields}
                     entity={entity}

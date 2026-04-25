@@ -37,14 +37,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isBooting, setIsBooting] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Rehydrate from localStorage on first mount.
+  // Rehydrate from localStorage on first mount, then verify the token against
+  // the server so a revoked or invalidated session does not boot as logged-in.
   useEffect(() => {
+    let cancelled = false;
     const stored = tokenStorage.read();
-    if (stored) {
-      setCurrentToken(stored.token);
-      setSnapshot(stored.snapshot);
+    if (!stored) {
+      setIsBooting(false);
+      return;
     }
-    setIsBooting(false);
+    setCurrentToken(stored.token);
+    setSnapshot(stored.snapshot);
+    (async () => {
+      try {
+        const me = await apiClient.authMe();
+        if (cancelled) return;
+        setSnapshot((prev) => ({
+          user: me.user,
+          tenant: me.tenant,
+          tenants: me.tenants,
+          expires_at: prev?.expires_at ?? stored.snapshot.expires_at,
+        }));
+      } catch {
+        if (cancelled) return;
+        tokenStorage.clear();
+        setCurrentToken(null);
+        setSnapshot(null);
+      } finally {
+        if (!cancelled) setIsBooting(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const applyResponse = useCallback((response: AuthResponse) => {

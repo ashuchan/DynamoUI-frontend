@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { apiClient } from '../../../lib/apiClient';
 import { queryKeys } from '../../../lib/queryKeys';
 import type { Sort, Filters, DisplayConfig, FieldMeta, ResolvedData, QueryResult } from '../../../lib/types';
@@ -25,19 +25,31 @@ export function useDataTable({ entity, resolvedData }: UseDataTableOptions) {
   const config: DisplayConfig | undefined = configQuery.data;
   const fields: FieldMeta[] = fieldMetaQuery.data ?? [];
 
-  const [sort, setSort] = useState<Sort | undefined>(
-    config?.defaultSort ?? undefined,
-  );
+  const [sort, setSort] = useState<Sort | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(config?.defaultPageSize ?? 20);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Filters>({});
+
+  // Sync local state from the display config exactly once, so the first
+  // ``fetchEntityList`` call uses the configured defaults rather than
+  // ``sort=undefined`` / ``pageSize=20``.
+  const didHydrateFromConfig = useRef(false);
+  useEffect(() => {
+    if (didHydrateFromConfig.current || !configQuery.isSuccess) return;
+    didHydrateFromConfig.current = true;
+    if (config?.defaultSort) setSort(config.defaultSort);
+    if (config?.defaultPageSize) setPageSize(config.defaultPageSize);
+  }, [configQuery.isSuccess, config?.defaultSort, config?.defaultPageSize]);
 
   const dataQuery = useQuery({
     queryKey: queryKeys.entityList(entity, sort, page, filters),
     queryFn: () =>
       apiClient.fetchEntityList(entity, { sort, page, pageSize, filters }),
     staleTime: 30 * 1000,
-    enabled: fieldMetaQuery.isSuccess && resolvedData === undefined,
+    enabled:
+      fieldMetaQuery.isSuccess &&
+      configQuery.isSuccess &&
+      resolvedData === undefined,
   });
 
   const resolvedQueryResult: QueryResult | undefined = resolvedData

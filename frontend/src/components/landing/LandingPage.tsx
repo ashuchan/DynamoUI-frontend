@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { apiClient } from '../../lib/apiClient';
-import type { ResolutionResult } from '../../lib/types';
+import { useNLResolve } from '../../lib/hooks/useNLResolve';
 
 // ── Wave paths — four sinusoidal curves at different amplitudes ───────────
 const WAVE_PATHS = [
@@ -19,32 +18,25 @@ const HINTS = [
   'revenue by artist',
 ];
 
-interface LandingPageProps {
-  onResolved: (query: string, result: ResolutionResult) => void;
-}
-
-export function LandingPage({ onResolved }: LandingPageProps) {
+export function LandingPage() {
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resolve = useNLResolve();
 
   async function submit(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
-    setIsLoading(true);
+    if (!trimmed || resolve.isPending) return;
     setError(null);
     try {
-      const result = await apiClient.resolve(trimmed);
-      if (result.entity) {
-        onResolved(trimmed, result);
-      } else {
-        setError('Could not determine which data to show. Try being more specific.');
+      const outcome = await resolve.mutateAsync({ input: trimmed });
+      if (outcome.kind === 'clarification_needed') {
+        setError(outcome.question);
       }
+      // `executed` already navigates via the hook; schedule/alert drafts will
+      // surface their own modal in later milestones.
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Request failed');
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -59,7 +51,7 @@ export function LandingPage({ onResolved }: LandingPageProps) {
   }
 
   return (
-    <div className="relative min-h-screen bg-dui-bg flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
       {/* Ambient decorative layers */}
       <div className="dui-landing-glow" aria-hidden="true" />
       <div className="dui-landing-grid" aria-hidden="true" />
@@ -75,7 +67,7 @@ export function LandingPage({ onResolved }: LandingPageProps) {
       />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-2xl px-6">
+      <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-2xl px-6 py-16">
 
         {/* Brand */}
         <div className="text-center">
@@ -111,8 +103,7 @@ export function LandingPage({ onResolved }: LandingPageProps) {
         <div className="w-full">
           <form onSubmit={handleSubmit}>
             <div className="dui-prompt-box flex items-center gap-3 px-5 py-4">
-              {/* Sparkle icon */}
-              {isLoading ? (
+              {resolve.isPending ? (
                 <Loader2 size={18} className="text-dui-primary animate-spin flex-shrink-0" />
               ) : (
                 <svg
@@ -139,14 +130,14 @@ export function LandingPage({ onResolved }: LandingPageProps) {
                 }}
                 placeholder={'Ask anything \u2014 e.g. \u201cshow top 5 albums by purchase\u201d'}
                 maxLength={500}
-                disabled={isLoading}
+                disabled={resolve.isPending}
                 className="flex-1 bg-transparent text-base text-dui-text-primary placeholder:text-dui-text-muted focus:outline-none"
                 aria-label="Natural language query"
               />
 
               <button
                 type="submit"
-                disabled={isLoading || !input.trim()}
+                disabled={resolve.isPending || !input.trim()}
                 className="dui-prompt-submit flex-shrink-0 text-sm px-5 py-2.5"
               >
                 Ask →

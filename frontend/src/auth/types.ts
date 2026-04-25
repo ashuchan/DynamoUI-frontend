@@ -34,3 +34,11 @@ export interface LoginPayload {
   email: string;
   password: string;
 }
+
+// Mirrors backend MeResponse: /auth/me returns session info without issuing a
+// fresh access token.
+export interface MeResponse {
+  user: UserSummary;
+  tenant: TenantSummary;
+  tenants: TenantSummary[];
+}
